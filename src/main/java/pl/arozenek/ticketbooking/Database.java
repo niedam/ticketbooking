@@ -38,8 +38,12 @@ public class Database {
         }
 
         //Tests, to remove later
-        List<Screening> li = selectScreening(61520000000000L, 71519975200000L);
-        for (Screening i: li) {
+        Reservation res = new Reservation("Adamk", "Rozenek",
+                1, 61520000000000L, 2.50, 4,3);
+        insertReservation(res);
+
+        List<Seat> li = selectReservedSeat(1);
+        for (Seat i : li) {
             System.err.println(i);
         }
     }
@@ -68,6 +72,7 @@ public class Database {
             e.printStackTrace();
             return null;
         }
+
         return screenings;
     }
 
@@ -78,11 +83,11 @@ public class Database {
         try {
             PreparedStatement prepStmt = conn.prepareStatement(
                     "SELECT IdScreening, IdRoom, screening.IdMovie, Time, Title " +
-                    "FROM screening LEFT JOIN movies ON screening.IdMovie = movies.IdMovie " +
-                    "WHERE Time >= ? AND Time <= ?;");
+                     "FROM screening LEFT JOIN movies ON screening.IdMovie = movies.IdMovie " +
+                     "WHERE Time >= ? AND Time <= ?;");
 
-            prepStmt.setLong(1,beginPeriod);
-            prepStmt.setLong(2,endPeriod);
+            prepStmt.setLong(1, beginPeriod);
+            prepStmt.setLong(2, endPeriod);
 
             ResultSet result = prepStmt.executeQuery();
 
@@ -102,6 +107,7 @@ public class Database {
             e.printStackTrace();
             return null;
         }
+
         return screenings;
     }
 
@@ -110,7 +116,7 @@ public class Database {
     public String selectTitleMovie(int idMovie) {
         String nameMovie = null;
         try {
-            PreparedStatement prepStmt = conn.prepareStatement("select title from movies where IdMovie=?");
+            PreparedStatement prepStmt = conn.prepareStatement("SELECT title FROM movies WHERE IdMovie=?");
             prepStmt.setInt(1, idMovie);
             ResultSet result = prepStmt.executeQuery();
             if (result.next()) {
@@ -120,6 +126,55 @@ public class Database {
             e.printStackTrace();
             return null;
         }
+
         return nameMovie;
+    }
+
+
+    //Insert reservation to database. Reservation @res is suppose to be valid
+    public boolean insertReservation(Reservation res) {
+        try {
+            PreparedStatement prepStmt = conn.prepareStatement(
+                    "INSERT INTO reservation VALUES (?, ?, ?, ?, ?, ?, ?)");
+            prepStmt.setString(1, res.getClientName());
+            prepStmt.setString(2, res.getClientSurname());
+            prepStmt.setInt(3, res.getIdScreening());
+            prepStmt.setLong(4, res.getTimeReservation());
+            prepStmt.setDouble(5, res.getPrice());
+            prepStmt.setInt(6, res.getRow());
+            prepStmt.setInt(7, res.getSeat());
+            prepStmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
+
+
+    //Select all seats reserved for specific screening
+    public List<Seat> selectReservedSeat(int idScreening) {
+        List<Seat> seats = new LinkedList<>();
+        try {
+            PreparedStatement prepStmt = conn.prepareStatement(
+                    "SELECT Row, Seat FROM reservation WHERE IdScreening=?;");
+            prepStmt.setInt(1, idScreening);
+
+            ResultSet resuS = prepStmt.executeQuery();
+
+            int row, seat;
+
+            while (resuS.next()) {
+                row = resuS.getInt("Row");
+                seat = resuS.getInt("Seat");
+                seats.add(new Seat(row, seat));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return seats;
     }
 }
