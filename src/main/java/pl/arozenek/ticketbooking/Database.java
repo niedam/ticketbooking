@@ -1,6 +1,6 @@
 package pl.arozenek.ticketbooking;
 
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -11,7 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 
-@Component
+@Repository
 public class Database {
 
     public static final String DRIVER = "org.sqlite.JDBC";
@@ -38,14 +38,14 @@ public class Database {
         }
 
         //Tests, to remove later
-        Reservation res = new Reservation("Adamk", "Rozenek",
+        /*Reservation res = new Reservation("Adamk", "Rozenek",
                 1, 61520000000000L, 2.50, 4,3);
         insertReservation(res);
 
         List<Seat> li = selectReservedSeat(1);
         for (Seat i : li) {
             System.err.println(i);
-        }
+        }*/
     }
 
 
@@ -55,7 +55,7 @@ public class Database {
         List<Screening> screenings = new LinkedList<Screening>();
         try {
             ResultSet result = stat.executeQuery("SELECT IdScreening, IdRoom, screening.IdMovie, Time, Title " +
-                    "FROM screening LEFT JOIN movies ON screening.IdMovie = movies.IdMovie;");
+                    "FROM screening LEFT JOIN movies ON screening.IdMovie = movies.IdMovie ORDER BY Title DESC, Time ASC;");
             int idScreening, idRoom, idMovie;
             long time;
             String title;
@@ -84,7 +84,7 @@ public class Database {
             PreparedStatement prepStmt = conn.prepareStatement(
                     "SELECT IdScreening, IdRoom, screening.IdMovie, Time, Title " +
                      "FROM screening LEFT JOIN movies ON screening.IdMovie = movies.IdMovie " +
-                     "WHERE Time >= ? AND Time <= ?;");
+                     "WHERE Time >= ? AND Time <= ? ORDER BY Title ASC, Time ASC;;");
 
             prepStmt.setLong(1, beginPeriod);
             prepStmt.setLong(2, endPeriod);
@@ -158,7 +158,7 @@ public class Database {
         List<Seat> seats = new LinkedList<>();
         try {
             PreparedStatement prepStmt = conn.prepareStatement(
-                    "SELECT Row, Seat FROM reservation WHERE IdScreening=?;");
+                    "SELECT Row, Seat FROM reservation WHERE IdScreening=? ORDER BY Row, Seat ASC;");
             prepStmt.setInt(1, idScreening);
 
             ResultSet resuS = prepStmt.executeQuery();
@@ -177,4 +177,5 @@ public class Database {
 
         return seats;
     }
+
 }

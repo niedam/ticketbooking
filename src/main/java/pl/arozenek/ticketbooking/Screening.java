@@ -1,15 +1,17 @@
 package pl.arozenek.ticketbooking;
 
+import java.util.Date;
+
 public class Screening {
     private int idScreening;
-    private int idRoom;
+    private int room;
     private int idMovie;
     private long time;
     private String title;
 
     public Screening(int idScreening, int idRoom, long time, int idMovie, String title) {
         this.idScreening = idScreening;
-        this.idRoom = idRoom;
+        this.room = idRoom;
         this.time = time;
         this.idMovie = idMovie;
         this.title = title;
@@ -19,8 +21,8 @@ public class Screening {
         return this.idScreening;
     }
 
-    public int getIdRoom() {
-        return this.idRoom;
+    public int getRoom() {
+        return this.room;
     }
 
     public int getIdMovie() {
@@ -37,6 +39,7 @@ public class Screening {
 
     @Override
     public String toString() {
-        return ("idScreening: " + idScreening + ", title: " + title);
+        Date date_time = new Date(time);
+        return (title + ", time: " + date_time + ", room: " + room + ", id of screening: " + idScreening);
     }
 }

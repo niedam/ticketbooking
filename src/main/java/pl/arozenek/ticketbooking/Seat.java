@@ -19,6 +19,6 @@ public class Seat {
 
     @Override
     public String toString() {
-        return (row + " " + seat);
+        return ("Row: " + row + ", Seat: " + seat);
     }
 }
