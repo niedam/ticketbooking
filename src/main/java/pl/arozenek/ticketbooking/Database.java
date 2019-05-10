@@ -37,15 +37,6 @@ public class Database {
             e.printStackTrace();
         }
 
-        //Tests, to remove later
-        /*Reservation res = new Reservation("Adamk", "Rozenek",
-                1, 61520000000000L, 2.50, 4,3);
-        insertReservation(res);
-
-        List<Seat> li = selectReservedSeat(1);
-        for (Seat i : li) {
-            System.err.println(i);
-        }*/
     }
 
 
@@ -56,6 +47,7 @@ public class Database {
         try {
             ResultSet result = stat.executeQuery("SELECT IdScreening, IdRoom, screening.IdMovie, Time, Title " +
                     "FROM screening LEFT JOIN movies ON screening.IdMovie = movies.IdMovie ORDER BY Title DESC, Time ASC;");
+
             int idScreening, idRoom, idMovie;
             long time;
             String title;
@@ -68,6 +60,7 @@ public class Database {
                 title = result.getString("Title");
                 screenings.add(new Screening(idScreening, idRoom, time, idMovie, title));
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
@@ -131,11 +124,30 @@ public class Database {
     }
 
 
+    //Return screening's idRoom
+    protected int selectIdRoom(int idScreening) {
+        int selectedResult = -1;
+        try {
+            PreparedStatement prepStmt = conn.prepareStatement("SELECT IdRoom FROM screening WHERE IdScreening=?");
+            prepStmt.setInt(1, idScreening);
+            ResultSet result = prepStmt.executeQuery();
+            if (result.next()) {
+                selectedResult = result.getInt("IdRoom");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
+
+        return selectedResult;
+    }
+
     //Insert reservation to database. Reservation @res is suppose to be valid
     public boolean insertReservation(Reservation res) {
         try {
             PreparedStatement prepStmt = conn.prepareStatement(
                     "INSERT INTO reservation VALUES (?, ?, ?, ?, ?, ?, ?)");
+
             prepStmt.setString(1, res.getClientName());
             prepStmt.setString(2, res.getClientSurname());
             prepStmt.setInt(3, res.getIdScreening());
@@ -155,7 +167,7 @@ public class Database {
 
     //Select all seats reserved for specific screening
     public List<Seat> selectReservedSeat(int idScreening) {
-        List<Seat> seats = new LinkedList<>();
+        List<Seat> seats = new LinkedList<Seat>();
         try {
             PreparedStatement prepStmt = conn.prepareStatement(
                     "SELECT Row, Seat FROM reservation WHERE IdScreening=? ORDER BY Row, Seat ASC;");
@@ -178,4 +190,52 @@ public class Database {
         return seats;
     }
 
+
+    //Create list containing number of rows in room and number of seats in every row
+    protected List<Object> selectRowsRoom(int idRoom) {
+        List<Object> listResult = new LinkedList<Object>();
+
+        try {
+            PreparedStatement prepStmt = conn.prepareStatement(
+                    "SELECT Rows, RowsLength FROM rooms WHERE IdRoom=?;");
+            prepStmt.setInt(1, idRoom);
+
+            ResultSet resuS = prepStmt.executeQuery();
+
+            int rows;
+            String rowsLength;
+
+            if (resuS.next()) {
+                rows = resuS.getInt("Rows");
+                rowsLength = resuS.getString("RowsLength");
+                listResult.add(rows);
+                listResult.add(rowsLength);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return listResult;
+
+    }
+
+
+    //Return time of particular screening
+    public long selectScreeningTime(int idScreening) {
+        long result = -1;
+        try {
+            PreparedStatement prepStmt = conn.prepareStatement("SELECT Time FROM screening WHERE IdScreening=?");
+            prepStmt.setInt(1, idScreening);
+            ResultSet resultS = prepStmt.executeQuery();
+            if (resultS.next()) {
+                result = resultS.getLong("Time");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
+
+        return result;
+    }
 }

@@ -8,6 +8,7 @@ import java.util.List;
 
 
 public class ReservationSystem {
+
     protected static List<Seat> availableSeats(int rows, String seats,
                                                LinkedList<Seat> occupiedSeats) {
 
@@ -32,5 +33,27 @@ public class ReservationSystem {
         }
 
         return result;
+    }
+
+    protected static List<Seat> freeSeatOnScreening(Database db, int idScreening) {
+
+        int idRoom = db.selectIdRoom(idScreening);
+        return freeSeatOnScreening(db, idScreening, idRoom);
+
+    }
+
+    protected static List<Seat> freeSeatOnScreening(Database db, int idScreening, int idRoom) {
+
+        List<Object> roomInfo = db.selectRowsRoom(idRoom);
+
+        int rows = (int) roomInfo.get(0);
+        String rowsLength = (String) roomInfo.get(1);
+
+        List<Seat> occupiedSeats = db.selectReservedSeat(idScreening);
+
+        List<Seat> freeSeats = ReservationSystem.availableSeats(rows, rowsLength,
+                (LinkedList<Seat>) occupiedSeats);
+
+        return freeSeats;
     }
 }

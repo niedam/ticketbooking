@@ -1,8 +1,27 @@
 package pl.arozenek.ticketbooking;
 
+import java.util.Comparator;
+
 public class Seat {
-    private int row;
-    private int seat;
+    public int row;
+    public int seat;
+
+    protected static Comparator<Seat> compare =
+            new Comparator<Seat>() {
+                @Override
+                public int compare(Seat seat, Seat t1) {
+                    if (seat.row < t1.row)
+                        return -1;
+                    else if (seat.row > t1.row)
+                        return 1;
+                    else if (seat.seat < t1.seat)
+                        return -1;
+                    else if (seat.seat > t1.seat)
+                        return 1;
+                    return 0;
+                }
+            };
+
 
     public Seat(int row, int seat) {
         this.row = row;
