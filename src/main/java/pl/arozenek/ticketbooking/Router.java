@@ -42,19 +42,6 @@ public class Router {
     }
 
 
-    @PostMapping(path = "/screening/json", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<List<Screening>> screeningsList(@RequestBody TimePeriod p) {
-
-        List<Screening> screeningList = database.selectScreening(p.begin, p.end);
-
-        if (screeningList == null)
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-
-
-        return ResponseEntity.ok(screeningList);
-    }
-
-
     @GetMapping(path = "/available_seat/", produces = "text/plain")
     public ResponseEntity<String> available_seat(@RequestParam(name = "id") int idScreening) {
 
