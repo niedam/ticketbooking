@@ -16,21 +16,42 @@ public class Router {
     @Autowired
     private Database database;
 
+
+    @PostMapping(path = "/date", consumes = "application/json", produces = "text/plain")
+    public ResponseEntity<String> getDate(@RequestBody DateForm date) {
+        return ResponseEntity.ok(date.toLong() + "\n");
+    }
+
+
     @PostMapping(path = "/screening", consumes = "application/json", produces = "text/plain")
-    public String screeningsString(@RequestBody TimePeriod p) {
+    public ResponseEntity<String> screeningsString(@RequestBody TimePeriod p) {
         List <Screening> screeningList = database.selectScreening(p.begin, p.end);
+
+        if (screeningList == null)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Screening cannot be found.\n");
+
+        if (screeningList.isEmpty())
+            return ResponseEntity.ok("There's no screening in this interval\n");
+
         StringBuilder result = new StringBuilder();
         for (Screening i: screeningList) {
             result.append(i);
             result.append('\n');
         }
-        return result.toString();
+        return ResponseEntity.ok(result.toString());
     }
 
 
     @PostMapping(path = "/screening/json", consumes = "application/json", produces = "application/json")
-    public List <Screening> screeningsList(@RequestBody TimePeriod p) {
-        return database.selectScreening(p.begin, p.end);
+    public ResponseEntity<List<Screening>> screeningsList(@RequestBody TimePeriod p) {
+
+        List<Screening> screeningList = database.selectScreening(p.begin, p.end);
+
+        if (screeningList == null)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+
+
+        return ResponseEntity.ok(screeningList);
     }
 
 
@@ -44,8 +65,14 @@ public class Router {
 
         List<Seat> freeSeats = ReservationSystem.freeSeatOnScreening(database, idScreening, idRoom);
 
+        if (freeSeats.isEmpty())
+            return ResponseEntity.ok("There is no place available.\n");
+
+        if (freeSeats == null)
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Seats cannot be found.\n");
+
         StringBuilder result = new StringBuilder("Available seats in room "+
-                database.selectIdRoom(idScreening) +":\n");
+                idRoom +":\n");
 
 
         for (Seat i: freeSeats) {
@@ -136,7 +163,8 @@ public class Router {
 
         Date expirationTime = new Date(screeningTime - 900000L);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("You have made reservation. Total price: " + finalPrice +
+        return ResponseEntity.status(HttpStatus.CREATED).body(name + " " + surname + ", you have made reservation." +
+                                                                " Total price: " + finalPrice +
                                                                 " PLN, your reservation expire on " + expirationTime + "\n");
     }
 

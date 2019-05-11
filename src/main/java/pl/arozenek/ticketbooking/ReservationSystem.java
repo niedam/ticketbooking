@@ -41,6 +41,10 @@ public class ReservationSystem {
     protected static List<Seat> freeSeatOnScreening(Database db, int idScreening) {
 
         int idRoom = db.selectIdRoom(idScreening);
+
+        if (idRoom == -1)
+            return null;
+
         return freeSeatOnScreening(db, idScreening, idRoom);
 
     }
@@ -54,10 +58,16 @@ public class ReservationSystem {
 
         List<Object> roomInfo = db.selectRowsRoom(idRoom);
 
+        if (roomInfo == null)
+            return null;
+
         int rows = (int) roomInfo.get(0);
         String rowsLength = (String) roomInfo.get(1);
 
         List<Seat> occupiedSeats = db.selectReservedSeat(idScreening);
+
+        if (occupiedSeats == null)
+            return null;
 
         List<Seat> freeSeats = ReservationSystem.availableSeats(rows, rowsLength,
                 (LinkedList<Seat>) occupiedSeats);
