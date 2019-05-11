@@ -1,14 +1,13 @@
 package pl.arozenek.ticketbooking;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.util.LinkedList;
 import java.util.List;
 
 
 public class ReservationSystem {
 
+    //Create list of available seats using number of rows in room (@row),
+    //numbers of seats in every row (@seats) and list of occupied seats (@occupiedSeats)
     protected static List<Seat> availableSeats(int rows, String seats,
                                                LinkedList<Seat> occupiedSeats) {
 
@@ -35,6 +34,10 @@ public class ReservationSystem {
         return result;
     }
 
+
+    //Return list of available seats on particular sreening
+    //@db - database with screening schedule and information
+    //@idScreening - id of particular screening
     protected static List<Seat> freeSeatOnScreening(Database db, int idScreening) {
 
         int idRoom = db.selectIdRoom(idScreening);
@@ -42,6 +45,11 @@ public class ReservationSystem {
 
     }
 
+
+    //Return list of available seats on particular sreening
+    //@db - database with screening schedule and information
+    //@idScreening - id of particular screening
+    //@idRoom - id of screening's room
     protected static List<Seat> freeSeatOnScreening(Database db, int idScreening, int idRoom) {
 
         List<Object> roomInfo = db.selectRowsRoom(idRoom);

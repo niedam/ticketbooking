@@ -14,8 +14,8 @@ import java.util.List;
 @Repository
 public class Database {
 
-    public static final String DRIVER = "org.sqlite.JDBC";
-    public static final String DB_URL = "jdbc:sqlite:src/main/resources/database.db";
+    private static final String DRIVER = "org.sqlite.JDBC";
+    private static final String DB_URL = "jdbc:sqlite:src/main/resources/database.db";
 
     private Connection conn;
     private Statement stat;
@@ -40,38 +40,8 @@ public class Database {
     }
 
 
-    //Select all screenings from database
-    public List<Screening> selectScreening() {
-
-        List<Screening> screenings = new LinkedList<Screening>();
-        try {
-            ResultSet result = stat.executeQuery("SELECT IdScreening, IdRoom, screening.IdMovie, Time, Title " +
-                    "FROM screening LEFT JOIN movies ON screening.IdMovie = movies.IdMovie ORDER BY Title DESC, Time ASC;");
-
-            int idScreening, idRoom, idMovie;
-            long time;
-            String title;
-
-            while (result.next()) {
-                idScreening = result.getInt("IdScreening");
-                idRoom = result.getInt("IdRoom");
-                time = result.getLong("Time");
-                idMovie = result.getInt("IdMovie");
-                title = result.getString("Title");
-                screenings.add(new Screening(idScreening, idRoom, time, idMovie, title));
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-
-        return screenings;
-    }
-
-
     //Select from database all films between @beginPeriod and @endPeriod
-    public List<Screening> selectScreening(long beginPeriod, long endPeriod) {
+    protected List<Screening> selectScreening(long beginPeriod, long endPeriod) {
         List<Screening> screenings = new LinkedList<Screening>();
         try {
             PreparedStatement prepStmt = conn.prepareStatement(
@@ -105,8 +75,15 @@ public class Database {
     }
 
 
+    //Select all screenings from database
+    protected List<Screening> selectScreening() {
+        return selectScreening(0L, Long.MAX_VALUE);
+    }
+
+
     //Give from database title of the movie
-    public String selectTitleMovie(int idMovie) {
+    //@idMovie - id of movie in database
+    protected String selectTitleMovie(int idMovie) {
         String nameMovie = null;
         try {
             PreparedStatement prepStmt = conn.prepareStatement("SELECT title FROM movies WHERE IdMovie=?");
@@ -125,6 +102,7 @@ public class Database {
 
 
     //Return screening's idRoom
+    //@idScreening - id of particular screening
     protected int selectIdRoom(int idScreening) {
         int selectedResult = -1;
         try {
@@ -142,8 +120,9 @@ public class Database {
         return selectedResult;
     }
 
+
     //Insert reservation to database. Reservation @res is suppose to be valid
-    public boolean insertReservation(Reservation res) {
+    protected boolean insertReservation(Reservation res) {
         try {
             PreparedStatement prepStmt = conn.prepareStatement(
                     "INSERT INTO reservation VALUES (?, ?, ?, ?, ?, ?, ?)");
@@ -156,6 +135,7 @@ public class Database {
             prepStmt.setInt(6, res.getRow());
             prepStmt.setInt(7, res.getSeat());
             prepStmt.execute();
+
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -166,7 +146,8 @@ public class Database {
 
 
     //Select all seats reserved for specific screening
-    public List<Seat> selectReservedSeat(int idScreening) {
+    //@idScreening - id of particular screening
+    protected List<Seat> selectReservedSeat(int idScreening) {
         List<Seat> seats = new LinkedList<Seat>();
         try {
             PreparedStatement prepStmt = conn.prepareStatement(
@@ -192,6 +173,7 @@ public class Database {
 
 
     //Create list containing number of rows in room and number of seats in every row
+    //@idRoom - id of room in database
     protected List<Object> selectRowsRoom(int idRoom) {
         List<Object> listResult = new LinkedList<Object>();
 
@@ -222,7 +204,8 @@ public class Database {
 
 
     //Return time of particular screening
-    public long selectScreeningTime(int idScreening) {
+    //@idScreening - id of particular screening
+    protected long selectScreeningTime(int idScreening) {
         long result = -1;
         try {
             PreparedStatement prepStmt = conn.prepareStatement("SELECT Time FROM screening WHERE IdScreening=?");
@@ -237,5 +220,39 @@ public class Database {
         }
 
         return result;
+    }
+
+
+    //Remove all reservation
+    protected boolean deleteAllReservation() {
+        try {
+            stat.execute("DELETE FROM reservation;");
+
+        } catch (SQLException e) {
+
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
+
+
+    //Try undo inserted reservations
+    //@name, @surname - infomation about client
+    //@timeRes - time of reservation created
+    protected void deleteReservation(String name, String surname, long timeRes) {
+        try {
+            PreparedStatement prepStmt = conn.prepareStatement("DELETE FROM reservation WHERE name=? AND " +
+                    "surname=? AND TimeReservation=?");
+
+            prepStmt.setString(1, name);
+            prepStmt.setString(2, surname);
+            prepStmt.setLong(3, timeRes);
+
+            prepStmt.execute();
+        } catch (SQLException e) {
+            return;
+        }
     }
 }

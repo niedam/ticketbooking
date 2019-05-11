@@ -3,11 +3,7 @@ package pl.arozenek.ticketbooking;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
 import javax.imageio.plugins.tiff.GeoTIFFTagSet;
@@ -75,7 +71,7 @@ public class Router {
     }
 
 
-    @PostMapping(path = "/reservation", consumes = "application/json", produces = "application/json")
+    @PostMapping(path = "/reservation", consumes = "application/json", produces = "text/plain")
     public ResponseEntity<String> makeReservation(@RequestBody SimpleReservation reservation) {
 
         long currentTime = System.currentTimeMillis();
@@ -117,20 +113,23 @@ public class Router {
 
         }
 
-        double finalPrice = 0.0;
+        double finalPrice = 0.00;
 
         for (SeatRes i: seats) {
             if (i.getTicketType() == 'A')
-                price = 25.0;
+                price = 25.00;
             else if (i.getTicketType() == 'S')
-                price = 18.0;
+                price = 18.00;
             else if (i.getTicketType() == 'C')
-                price = 12.5;
+                price = 12.50;
 
             finalPrice += price;
 
-            database.insertReservation(new Reservation(name, surname, idScreening,
-                    currentTime, price, i.getRow(), i.getSeat()));
+            if (!database.insertReservation(new Reservation(name, surname, idScreening,
+                    currentTime, price, i.getRow(), i.getSeat()))) {
+                database.deleteReservation(name, surname, currentTime);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Reservation has not been made properly.");
+            }
 
 
         }
@@ -138,7 +137,17 @@ public class Router {
         Date expirationTime = new Date(screeningTime - 900000L);
 
         return ResponseEntity.status(HttpStatus.CREATED).body("You have made reservation. Total price: " + finalPrice +
-                                                                "PLN, your reservation expire on " + expirationTime + "\n");
+                                                                " PLN, your reservation expire on " + expirationTime + "\n");
+    }
+
+
+    @DeleteMapping(path = "/reset_reservations", produces = "text/plain")
+    public ResponseEntity<String> resetReservations() {
+
+        if (!database.deleteAllReservation())
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Reservations could not be deleted.\n");
+
+        return ResponseEntity.ok("All stored reservations has been deleted.\n");
     }
 
 }
