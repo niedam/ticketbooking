@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.*;
 
+/* Declaration of endpoints */
 
 @RestController
 public class Router {

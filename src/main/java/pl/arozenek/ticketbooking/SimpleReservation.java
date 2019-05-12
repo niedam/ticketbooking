@@ -1,5 +1,6 @@
 package pl.arozenek.ticketbooking;
 
+/* Class for /reservation endpoint */
 
 public class SimpleReservation {
 

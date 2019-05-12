@@ -1,5 +1,7 @@
 package pl.arozenek.ticketbooking;
 
+/* Class for /reservation endpoint */
+
 public class Reservation {
     private String clientName;
     private String clientSurname;

@@ -2,6 +2,8 @@ package pl.arozenek.ticketbooking;
 
 import java.util.Comparator;
 
+/* Class to seats in room representation */
+
 public class Seat {
     public int row;
     public int seat;

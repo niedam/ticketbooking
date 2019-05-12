@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-
+/* Class with methods to make connection with database */
 
 @Repository
 public class Database {

@@ -2,6 +2,8 @@ package pl.arozenek.ticketbooking;
 
 import java.util.Date;
 
+
+
 public class Screening {
     private int idScreening;
     private int room;

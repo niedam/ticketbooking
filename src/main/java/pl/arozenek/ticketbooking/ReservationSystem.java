@@ -3,6 +3,7 @@ package pl.arozenek.ticketbooking;
 import java.util.LinkedList;
 import java.util.List;
 
+/* Class with methods used to make reservation */
 
 public class ReservationSystem {
 

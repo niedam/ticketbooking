@@ -2,6 +2,9 @@ package pl.arozenek.ticketbooking;
 
 import java.util.Date;
 
+
+/* Class for /date endpoint */
+
 public class DateForm {
     public int day;
     public int month;
